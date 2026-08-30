@@ -23,6 +23,7 @@
     <java.version>21</java.version>
     <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
     <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
+    <google-auth-library.version>1.30.1</google-auth-library.version>
     <spotless.version>2.46.1</spotless.version>
     <google-java-format.version>1.36.1</google-java-format.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
@@ -43,6 +44,14 @@
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
       <version>${nimbus-jose-jwt.version}</version>
+    </dependency>
+    <!-- Stage 2 only: minting Google-signed ID tokens on Cloud Run. Optional so stage 1
+         services that never set mode=google do not carry it. -->
+    <dependency>
+      <groupId>com.google.auth</groupId>
+      <artifactId>google-auth-library-oauth2-http</artifactId>
+      <version>${google-auth-library.version}</version>
+      <optional>true</optional>
     </dependency>
 
     <!-- Optional: each auto-configuration activates only when the service brings the starter.
