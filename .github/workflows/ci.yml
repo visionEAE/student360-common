@@ -1,0 +1,14 @@
+# Thin caller: the logic lives in visionEAE/workflows. This is the library itself, so there is
+# no common to check out beside it (needs-common: false) and nothing to deploy — consumers build
+# it from source in their own pipelines, the same way make build-common does locally.
+name: ci
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: visionEAE/workflows/.github/workflows/java-ci.yml@main
+    with:
+      needs-common: false
