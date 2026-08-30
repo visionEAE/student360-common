@@ -9,8 +9,13 @@ public enum AuthorizationBasis {
   SELF,
   /** An active advisor assignment linked the caller to the student. */
   ASSIGNMENT,
-  /** The caller holds a role that grants access regardless of relationship. */
+  /** The caller holds the ADMIN role, which grants access regardless of relationship. */
   ADMIN_ROLE,
+  /**
+   * The caller is staff (an advisor) reading institutional records. Whether the advisor is actually
+   * assigned to the student is enforced by support-service, which owns assignments.
+   */
+  STAFF_ROLE,
   /** A sibling service acting on its own behalf. */
   SERVICE,
   /** No relationship was found; the only valid basis for a denied outcome. */
