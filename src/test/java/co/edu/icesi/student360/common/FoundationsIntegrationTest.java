@@ -155,4 +155,14 @@ class FoundationsIntegrationTest {
     Integer count = jdbc.queryForObject("SELECT count(*) FROM " + table, Integer.class);
     return count == null ? 0 : count;
   }
+
+  @Test
+  void shouldReturn400NotA500ForAMalformedUuidPathVariable() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/probe/by-id/not-a-uuid")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.tokenFor("probe-service")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Invalid request"));
+  }
 }
