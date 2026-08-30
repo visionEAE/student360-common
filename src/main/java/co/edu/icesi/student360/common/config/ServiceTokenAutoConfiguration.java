@@ -13,9 +13,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 /**
- * Stage 1 service-to-service authentication. A service that defines its own {@link
- * ServiceTokenProvider} or {@link ServiceTokenValidator} bean (the stage 2 Google adapters) wins
- * over these defaults without touching this class.
+ * Stage 1 service-to-service authentication. The local HS256 adapters exist only while {@code
+ * student360.security.service-token.mode} is {@code local} (the default) — setting {@code google}
+ * hands both ports to {@link GoogleServiceTokenAutoConfiguration} without touching this class. The
+ * mode gate matters because {@code ServiceTokenFilter} only protects {@code /api/**} when a
+ * validator bean exists: dropping the secret alone must never silently unprotect a service, it must
+ * be an explicit mode switch to an adapter that still validates.
  */
 @AutoConfiguration
 @EnableConfigurationProperties(Student360Properties.class)
@@ -32,6 +35,10 @@ public class ServiceTokenAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   @ConditionalOnProperty("student360.security.service-token.secret")
+  @ConditionalOnProperty(
+      name = "student360.security.service-token.mode",
+      havingValue = "local",
+      matchIfMissing = true)
   public ServiceTokenProvider serviceTokenProvider(Student360Properties properties, Clock clock) {
     return new LocalServiceTokenProvider(
         requireServiceName(properties),
@@ -43,6 +50,10 @@ public class ServiceTokenAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   @ConditionalOnProperty("student360.security.service-token.secret")
+  @ConditionalOnProperty(
+      name = "student360.security.service-token.mode",
+      havingValue = "local",
+      matchIfMissing = true)
   public ServiceTokenValidator serviceTokenValidator(Student360Properties properties, Clock clock) {
     return new LocalServiceTokenValidator(
         requireServiceName(properties), secret(properties), clock);
