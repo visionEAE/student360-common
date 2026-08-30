@@ -3,6 +3,7 @@ package co.edu.icesi.student360.common.api;
 import co.edu.icesi.student360.common.api.exception.DomainException;
 import co.edu.icesi.student360.common.api.exception.RateLimitExceededException;
 import co.edu.icesi.student360.common.logging.Correlation;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -47,6 +49,27 @@ public class GlobalExceptionHandler {
     ProblemDetail problem =
         problem(HttpStatus.BAD_REQUEST, "Validation failed", "One or more fields are invalid");
     problem.setProperty("errors", errors);
+    return ResponseEntity.badRequest().body(problem);
+  }
+
+  /**
+   * Method-level validation ({@code @Validated} on a controller with {@code @RequestParam} or
+   * {@code @PathVariable} constraints) and query construction errors (a value object rejecting its
+   * own invariants, e.g. too many ids in a batch request): the caller's mistake, not an unexpected
+   * one — 400, never 500.
+   */
+  @ExceptionHandler({ConstraintViolationException.class, IllegalArgumentException.class})
+  public ResponseEntity<ProblemDetail> handleBadRequest(RuntimeException exception) {
+    ProblemDetail problem =
+        problem(HttpStatus.BAD_REQUEST, "Invalid request", exception.getMessage());
+    return ResponseEntity.badRequest().body(problem);
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ProblemDetail> handleMissingParameter(
+      MissingServletRequestParameterException exception) {
+    ProblemDetail problem =
+        problem(HttpStatus.BAD_REQUEST, "Invalid request", exception.getMessage());
     return ResponseEntity.badRequest().body(problem);
   }
 
