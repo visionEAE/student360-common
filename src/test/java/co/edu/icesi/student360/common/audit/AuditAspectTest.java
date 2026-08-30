@@ -4,11 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import co.edu.icesi.student360.common.api.exception.AccessDeniedForSubjectException;
+import co.edu.icesi.student360.common.identity.Identity;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 
@@ -47,6 +51,24 @@ class AuditAspectTest {
     assertThat(record.authorizationBasis()).isEqualTo(AuthorizationBasis.NONE);
     assertThat(record.subjectId()).isEqualTo("S-9999");
     assertThat(record.details()).containsKey("reason");
+  }
+
+  @Test
+  void shouldRecordWithExplicitActorWhenNoIdentityIsBound() {
+    Identity actor = new Identity(UUID.randomUUID(), Set.of("STUDENT"), "S-1001");
+
+    trail.recordAs(
+        actor,
+        RecordType.SECURITY,
+        "LOGIN_SUCCEEDED",
+        "SESSION",
+        "s-1",
+        null,
+        Outcome.ALLOWED,
+        Map.of());
+
+    assertThat(written.get(0).actorId()).isEqualTo(actor.userId());
+    assertThat(written.get(0).actorRoles()).containsExactly("STUDENT");
   }
 
   @Test

@@ -38,7 +38,31 @@ public class AuditTrail {
       AuthorizationBasis basis,
       Outcome outcome,
       Map<String, Object> details) {
-    Optional<Identity> actor = IdentityContext.current();
+    recordAs(
+        IdentityContext.current().orElse(null),
+        recordType,
+        action,
+        subjectType,
+        subjectId,
+        basis,
+        outcome,
+        details);
+  }
+
+  /**
+   * Same as {@link #record}, with an explicit actor. Needed where no gateway identity exists yet
+   * but the actor is known — the SSO recording who just logged in or whose session was revoked.
+   */
+  public void recordAs(
+      Identity explicitActor,
+      RecordType recordType,
+      String action,
+      String subjectType,
+      String subjectId,
+      AuthorizationBasis basis,
+      Outcome outcome,
+      Map<String, Object> details) {
+    Optional<Identity> actor = Optional.ofNullable(explicitActor);
     AuditRecord record =
         AuditRecord.builder()
             .occurredAt(clock.instant())
