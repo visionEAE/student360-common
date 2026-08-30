@@ -1,0 +1,4 @@
+co.edu.icesi.student360.common.config.ServiceTokenAutoConfiguration
+co.edu.icesi.student360.common.config.CommonWebAutoConfiguration
+co.edu.icesi.student360.common.config.AuditAutoConfiguration
+co.edu.icesi.student360.common.config.OutboxAutoConfiguration
