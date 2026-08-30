@@ -17,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * One RFC 7807 shape for every error of every service. Responses carry the request id so a user can
@@ -70,6 +71,26 @@ public class GlobalExceptionHandler {
       MissingServletRequestParameterException exception) {
     ProblemDetail problem =
         problem(HttpStatus.BAD_REQUEST, "Invalid request", exception.getMessage());
+    return ResponseEntity.badRequest().body(problem);
+  }
+
+  /**
+   * A path or query value that cannot be converted to the type the handler expects — most often a
+   * malformed {@code UUID} in a path like {@code /alerts/{id}}. The caller sent something wrong; it
+   * is never a 500.
+   */
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ProblemDetail> handleTypeMismatch(
+      MethodArgumentTypeMismatchException exception) {
+    String expected =
+        exception.getRequiredType() == null
+            ? "the expected type"
+            : exception.getRequiredType().getSimpleName();
+    ProblemDetail problem =
+        problem(
+            HttpStatus.BAD_REQUEST,
+            "Invalid request",
+            "Parameter '" + exception.getName() + "' must be " + expected);
     return ResponseEntity.badRequest().body(problem);
   }
 
