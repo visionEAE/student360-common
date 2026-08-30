@@ -15,6 +15,7 @@
         <thread>thread</thread>
       </fieldNames>
       <customFields>{"service":"${serviceName}"}</customFields>
+      <includeContext>false</includeContext>
       <!-- Only the correlation keys; nothing else that lands in the MDC leaks into the log. -->
       <includeMdcKeyName>requestId</includeMdcKeyName>
       <includeMdcKeyName>traceId</includeMdcKeyName>
