@@ -6,13 +6,22 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 /**
  * Writes one record per {@link Audited} invocation. A normal return is ALLOWED with the basis the
  * access policy declared; an {@link AccessDeniedForSubjectException} is DENIED with basis NONE and
  * is rethrown untouched. Other exceptions are not the trail's business and pass through.
+ *
+ * <p>Must run OUTSIDE {@code @Transactional} on the same method: the writer's REQUIRES_NEW takes a
+ * second connection, and holding the business connection while asking for it deadlocks the pool as
+ * soon as concurrent audited calls reach the pool size. Ordered ahead of the transaction advisor
+ * (which sits at {@link Ordered#LOWEST_PRECEDENCE}) so the business transaction has committed and
+ * released its connection before the record is written.
  */
 @Aspect
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
 public class AuditAspect {
 
   private final AuditTrail trail;
